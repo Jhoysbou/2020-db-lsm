@@ -9,7 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class MyDAO implements DAO {
-    private SortedMap<ByteBuffer, ByteBuffer> map;
+    private final SortedMap<ByteBuffer, ByteBuffer> map;
 
     public MyDAO() {
         map = new TreeMap<>();
