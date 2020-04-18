@@ -8,15 +8,16 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class myDAO implements DAO {
-    private final SortedMap<ByteBuffer, ByteBuffer> map = new TreeMap<>();
+public class MyDAO implements DAO {
+    private SortedMap<ByteBuffer, ByteBuffer> map;
 
-    public myDAO() {
+    public MyDAO() {
+        map = new TreeMap<>();
     }
 
     @NotNull
     @Override
-    public Iterator<Record> iterator(@NotNull ByteBuffer from) throws IOException {
+    public Iterator<Record> iterator(@NotNull final ByteBuffer from) throws IOException {
         return map.tailMap(from)
                 .entrySet()
                 .stream()
@@ -25,12 +26,12 @@ public class myDAO implements DAO {
     }
 
     @Override
-    public void upsert(@NotNull ByteBuffer key, @NotNull ByteBuffer value) throws IOException {
+    public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) throws IOException {
         map.put(key, value);
     }
 
     @Override
-    public void remove(@NotNull ByteBuffer key) throws IOException {
+    public void remove(@NotNull final ByteBuffer key) throws IOException {
         map.remove(key);
     }
 
