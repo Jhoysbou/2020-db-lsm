@@ -15,7 +15,12 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+import java.util.stream.Stream;
 import java.util.stream.Stream;
 
 public class LsmDao implements DAO {
@@ -33,7 +38,7 @@ public class LsmDao implements DAO {
     private int generation;
 
     /**
-     * Simple LSM
+     * Simple LSM.
      *
      * @param storage        the directory to store data
      * @param flushThreshold maximum bytes to store in memory.

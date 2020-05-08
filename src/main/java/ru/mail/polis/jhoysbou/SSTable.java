@@ -125,8 +125,7 @@ public class SSTable implements Table {
                 try {
                     return getCell(position++);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    throw new RuntimeException("Couldn't get next Cell:\n" + e);
+                    throw new RuntimeException(e);
                 }
             }
         };
