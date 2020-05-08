@@ -28,12 +28,14 @@ public class LsmDao implements DAO {
     private static final String SUFFIX = ".dat";
     private static final String TEMP = ".tmp";
     private final NavigableMap<Integer, Table> ssTables;
+    @NotNull
+    private final File storage;
+    private final long flushThreshold;
     // Data
     private Table memTable;
     // State
     private int generation;
-
-    @NotNull
+  
     private File storage;
     final private long flushThreshold;
 
@@ -46,8 +48,9 @@ public class LsmDao implements DAO {
      * @throws IOException when where are problems with getting list of files in storage directory
      */
     public LsmDao(
-            @NotNull final File storage,
+            final @NotNull File storage,
             final long flushThreshold) throws IOException {
+        this.generation = 0;
 
         assert flushThreshold > 0L;
         this.flushThreshold = flushThreshold;
