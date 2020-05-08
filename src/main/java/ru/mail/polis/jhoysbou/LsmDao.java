@@ -1,4 +1,4 @@
-package ru.mail.polis.dao;
+package ru.mail.polis.jhoysbou;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
@@ -32,6 +32,7 @@ public class LsmDao implements DAO {
     public LsmDao(
             @NotNull final File storage,
             final long flushThreshold) throws IOException {
+
         assert flushThreshold > 0L;
         this.flushThreshold = flushThreshold;
         this.storage = storage;
@@ -103,7 +104,7 @@ public class LsmDao implements DAO {
         Files.move(file.toPath(), dst.toPath(), StandardCopyOption.ATOMIC_MOVE);
 
         memTable = new MemTable();
-        ssTables.put(++generation, new SSTable(dst));
+        ssTables.put(generation++, new SSTable(dst));
     }
 
     @Override
@@ -112,6 +113,9 @@ public class LsmDao implements DAO {
             flush();
         }
 
+        for (final Table t : ssTables.values()) {
+            t.close();
+        }
     }
 }
 

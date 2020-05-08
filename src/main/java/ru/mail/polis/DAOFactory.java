@@ -17,7 +17,7 @@
 package ru.mail.polis;
 
 import org.jetbrains.annotations.NotNull;
-import ru.mail.polis.dao.LsmDao;
+import ru.mail.polis.jhoysbou.LsmDao;
 
 import java.io.File;
 import java.io.IOException;
