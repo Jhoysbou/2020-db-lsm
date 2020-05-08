@@ -15,11 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class LsmDao implements DAO {
@@ -29,13 +25,12 @@ public class LsmDao implements DAO {
     private static final String TEMP = ".tmp";
     private final NavigableMap<Integer, Table> ssTables;
     @NotNull
-    final private File storage;
-    final private long flushThreshold;
+    private final File storage;
+    private final long flushThreshold;
     // Data
     private Table memTable;
     // State
     private int generation;
-
 
     /**
      * Simple LSM
