@@ -10,7 +10,7 @@ final class Value implements Comparable<Value> {
     @NotNull
     private final Optional<ByteBuffer> data;
 
-    Value(final long timestamp, final @NotNull ByteBuffer data) {
+    Value(final long timestamp, @NotNull final ByteBuffer data) {
         assert timestamp > 0L;
         this.timestamp = timestamp;
         this.data = Optional.of(data);
@@ -37,7 +37,7 @@ final class Value implements Comparable<Value> {
     }
 
     @Override
-    public int compareTo(final @NotNull Value o) {
+    public int compareTo(@NotNull final Value o) {
         return -Long.compare(timestamp, o.timestamp);
     }
 }

@@ -23,8 +23,8 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 public class LsmDao implements DAO {
-
     private static final Logger log = LoggerFactory.getLogger(LsmDao.class);
+
     private static final String SUFFIX = ".dat";
     private static final String TEMP = ".tmp";
     private final NavigableMap<Integer, Table> ssTables;
@@ -35,6 +35,9 @@ public class LsmDao implements DAO {
     private Table memTable;
     // State
     private int generation;
+  
+    private File storage;
+    final private long flushThreshold;
 
     /**
      * Simple LSM.
@@ -57,13 +60,15 @@ public class LsmDao implements DAO {
 
         try (Stream<Path> files = Files.list(storage.toPath())) {
             files.filter(path -> path.toString().endsWith(SUFFIX)).forEach(f -> {
+                final String name = f.getFileName().toString();
                 try {
-                    final String name = f.getFileName().toString();
-                    final int lastFlushedGeneration = Integer.parseInt(name.substring(0, name.indexOf(SUFFIX)));
-                    this.generation = Math.max(this.generation, lastFlushedGeneration);
-                    ssTables.put(lastFlushedGeneration, new SSTable(f.toFile()));
+                    final int savedGeneration = Integer.parseInt(name.substring(0, name.indexOf(SUFFIX)));
+                    this.generation = Math.max(this.generation, savedGeneration);
+                    ssTables.put(savedGeneration, new SSTable(f.toFile()));
                 } catch (IOException e) {
                     log.warn("IOException with .dat file:\n" + e.getMessage());
+                } catch (NumberFormatException e) {
+                    log.warn("Bad file name:" + name + "\n" + e.getMessage());
                 }
             });
         }
@@ -71,7 +76,7 @@ public class LsmDao implements DAO {
 
     @NotNull
     @Override
-    public Iterator<Record> iterator(final @NotNull ByteBuffer from) throws IOException {
+    public Iterator<Record> iterator(@NotNull final ByteBuffer from) throws IOException {
         final List<Iterator<Cell>> iters = new ArrayList<>(ssTables.size() + 1);
         iters.add(memTable.iterator(from));
         ssTables.descendingMap().values().forEach(t -> {
@@ -93,7 +98,7 @@ public class LsmDao implements DAO {
     }
 
     @Override
-    public void upsert(final @NotNull ByteBuffer key, final @NotNull ByteBuffer value) throws IOException {
+    public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) throws IOException {
         memTable.upsert(key, value);
         if (memTable.sizeInBytes() > flushThreshold) {
             flush();
@@ -101,7 +106,7 @@ public class LsmDao implements DAO {
     }
 
     @Override
-    public void remove(final @NotNull ByteBuffer key) throws IOException {
+    public void remove(@NotNull final ByteBuffer key) throws IOException {
         memTable.remove(key);
         if (memTable.sizeInBytes() > flushThreshold) {
             flush();

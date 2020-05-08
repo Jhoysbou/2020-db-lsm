@@ -34,6 +34,8 @@ public class SSTable implements Table {
 
             while (elementsIter.hasNext()) {
                 final Cell cell = elementsIter.next();
+                final ByteBuffer key = cell.getKey();
+                final int keySize = key.remaining();
 
                 final ByteBuffer key = cell.getKey();
                 final int keySize = key.remaining();
@@ -50,8 +52,8 @@ public class SSTable implements Table {
                 if (value.isTombstone()) {
                     fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(-1).flip());
                 } else {
-                    final ByteBuffer buffer = value.getData();
-                    final int valueSize = buffer.remaining();
+                    final ByteBuffer valueBuffer = value.getData();
+                    final int valueSize = valueBuffer.remaining();
                     fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(valueSize).flip());
                     fileChannel.write(buffer);
                     offset += valueSize;
