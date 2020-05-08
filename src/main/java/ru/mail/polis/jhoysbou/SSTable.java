@@ -11,73 +11,74 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-
 public class SSTable implements Table {
 
     private final FileChannel channel;
     private final int size;
     private final int shift;
 
-
     SSTable(@NotNull final File file) throws IOException {
         channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
-        int fileSize = (int) channel.size();
-        ByteBuffer offsetBuf = ByteBuffer.allocate(Integer.BYTES);
-        channel.read(offsetBuf, fileSize - Integer.BYTES);
-        size = offsetBuf.flip().getInt();
+        final int fileSize = (int) channel.size();
+        final ByteBuffer offsetBuffer = ByteBuffer.allocate(Integer.BYTES);
+        channel.read(offsetBuffer, fileSize - Integer.BYTES);
+        size = offsetBuffer.flip().getInt();
         shift = fileSize - Integer.BYTES * (size + 1);
     }
 
     static void serialize(final File file, final Iterator<Cell> elementsIter, final int amount) throws IOException {
         try (FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE)) {
 
-            List<Integer> offsets = new ArrayList<>();
+            final List<Integer> offsets = new ArrayList<>();
             int offset = 0;
 
             while (elementsIter.hasNext()) {
-                Cell cell = elementsIter.next();
-                ByteBuffer key = cell.getKey();
-                int keySize = key.remaining();
-                Value value = cell.getValue();
+                final Cell cell = elementsIter.next();
 
+                final ByteBuffer key = cell.getKey();
+                final int keySize = key.remaining();
+
+                offset += keySize + 2 * Integer.BYTES + Long.BYTES;
                 offsets.add(offset);
-                offset += keySize + Integer.BYTES * 2 + Long.BYTES;
 
                 fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(keySize).flip());
                 fileChannel.write(key);
+
+                final Value value = cell.getValue();
                 fileChannel.write(ByteBuffer.allocate(Long.BYTES).putLong(value.getTimestamp()).flip());
 
                 if (value.isTombstone()) {
                     fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(-1).flip());
                 } else {
-                    ByteBuffer valueBuffer = value.getData();
-                    int valueSize = valueBuffer.remaining();
+                    final ByteBuffer buffer = value.getData();
+                    final int valueSize = buffer.remaining();
                     fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(valueSize).flip());
-                    fileChannel.write(valueBuffer);
+                    fileChannel.write(buffer);
                     offset += valueSize;
                 }
             }
 
-            for (Integer i : offsets) {
+            for (final Integer i : offsets) {
                 fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(i).flip());
             }
+
             fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(amount).flip());
         }
     }
 
     private int getOffset(final int position) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+        final ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
         channel.read(buffer, shift + position * Integer.BYTES);
         return buffer.flip().getInt();
     }
 
     private ByteBuffer getKey(final int position) throws IOException {
-        int keyLengthOffset = getOffset(position);
+        final int keyOffset = getOffset(position);
 
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-        channel.read(buffer, keyLengthOffset);
+        channel.read(buffer, keyOffset);
         buffer = ByteBuffer.allocate(buffer.flip().getInt());
-        channel.read(buffer, keyLengthOffset + Integer.BYTES);
+        channel.read(buffer, keyOffset + Integer.BYTES);
 
         return buffer.flip();
     }
@@ -124,7 +125,8 @@ public class SSTable implements Table {
                 try {
                     return getCell(position++);
                 } catch (IOException e) {
-                    throw new RuntimeException();
+                    e.printStackTrace();
+                    throw new RuntimeException("Couldn't get next Cell");
                 }
             }
         };
@@ -149,7 +151,6 @@ public class SSTable implements Table {
 
         return left;
     }
-
 
     @Override
     public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) {

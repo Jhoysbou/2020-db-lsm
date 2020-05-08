@@ -14,12 +14,11 @@ final class Cell {
     private final Value value;
 
     Cell(
-            @NotNull ByteBuffer key,
-            @NotNull Value value) {
+            final @NotNull ByteBuffer key,
+            final @NotNull Value value) {
         this.key = key;
         this.value = value;
     }
-
 
     @NotNull
     public ByteBuffer getKey() {
