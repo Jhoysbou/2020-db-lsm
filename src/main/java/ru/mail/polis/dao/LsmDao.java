@@ -31,7 +31,7 @@ public class LsmDao implements DAO {
 
     public LsmDao(
             @NotNull final File storage,
-            final long flushThreshold) {
+            final long flushThreshold) throws IOException {
         assert flushThreshold > 0L;
         this.flushThreshold = flushThreshold;
         this.storage = storage;
@@ -61,6 +61,7 @@ public class LsmDao implements DAO {
             try {
                 iters.add(t.iterator(from));
             } catch (IOException e) {
+                System.out.println("error");
                 e.printStackTrace();
             }
         });
@@ -84,7 +85,7 @@ public class LsmDao implements DAO {
 
     @Override
     public void remove(@NotNull ByteBuffer key) throws IOException {
-        memTable.upsert(key);
+        memTable.remove(key);
         if (memTable.sizeInBytes() > flushThreshold) {
             flush();
         }
@@ -92,6 +93,7 @@ public class LsmDao implements DAO {
 
     private void flush() throws IOException {
         final File file = new File(storage, generation + TEMP);
+        file.createNewFile();
         SSTable.serialize(
                 file,
                 memTable.iterator(ByteBuffer.allocate(0)),
@@ -101,8 +103,7 @@ public class LsmDao implements DAO {
         Files.move(file.toPath(), dst.toPath(), StandardCopyOption.ATOMIC_MOVE);
 
         memTable = new MemTable();
-        ssTables.put(generation, new SSTable(dst));
-        generation++;
+        ssTables.put(++generation, new SSTable(dst));
     }
 
     @Override

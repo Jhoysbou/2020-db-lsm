@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 public class MemTable implements Table {
     private final SortedMap<ByteBuffer, Value> map = new TreeMap<>();
+    private long sizeInBytes = 0L;
 
     @NotNull
     @Override
@@ -23,13 +24,26 @@ public class MemTable implements Table {
 
     @Override
     public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) throws IOException {
-        map.put(key, new Value(System.currentTimeMillis(), value));
+        final Value oldValue = map.put(key, new Value(System.currentTimeMillis(), value));
+
+        if (oldValue == null) {
+            sizeInBytes += key.remaining() + value.remaining() + Long.BYTES;
+        } else {
+            sizeInBytes += value.remaining() - oldValue.getData().remaining();
+        }
     }
 
     @Override
     public void remove(@NotNull final ByteBuffer key) throws IOException {
-        map.put(key, new Value(System.currentTimeMillis()));
+        final Value oldValue = map.put(key, new Value(System.currentTimeMillis()));
+
+        if (oldValue == null) {
+            sizeInBytes += key.remaining() + Long.BYTES;
+        } else {
+            sizeInBytes -= oldValue.getData().remaining();
+        }
     }
+
 
     @Override
     public int size() {
@@ -38,6 +52,11 @@ public class MemTable implements Table {
 
     @Override
     public long sizeInBytes() {
-//        TODO: implement
+        return sizeInBytes;
+    }
+
+    @Override
+    public void close() {
+        // no need to close something
     }
 }

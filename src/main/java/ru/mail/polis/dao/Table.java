@@ -33,4 +33,6 @@ public interface Table {
     int size();
 
     long sizeInBytes();
+
+    void close() throws IOException;
 }

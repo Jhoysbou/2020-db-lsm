@@ -20,7 +20,7 @@ class ItersTest {
         final ImmutableList<Integer> sixNumbers = ImmutableList.of(1, 2, 3, 4, 5, 6);
 
         assertFalse(Iters.until(sixNumbers.iterator(), 0).hasNext());
-        
+
         assertEquals(1, Iterators.size(Iters.until(sixNumbers.iterator(), 2)));
         assertEquals(3, Iterators.size(Iters.until(sixNumbers.iterator(), 4)));
         assertEquals(6, Iterators.size(Iters.until(sixNumbers.iterator(), 7)));

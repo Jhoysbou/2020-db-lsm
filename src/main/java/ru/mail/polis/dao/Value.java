@@ -32,6 +32,10 @@ final class Value implements Comparable<Value>{
         return data.orElseThrow().asReadOnlyBuffer();
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
     @Override
     public int compareTo(@NotNull Value o) {
         return -Long.compare(timestamp, o.timestamp);

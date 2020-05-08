@@ -6,9 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.Comparator;
 
 final class Cell {
-    static final Comparator<Cell> COMPARATOR =
-            Comparator.comparing(Cell::getKey)
-                    .thenComparing(Cell::getValue);
+    static final Comparator<Cell> COMPARATOR = Comparator.comparing(Cell::getKey).thenComparing(Cell::getValue);
 
     @NotNull
     private final ByteBuffer key;
