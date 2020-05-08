@@ -10,7 +10,7 @@ import java.util.TreeMap;
 
 public class MemTable implements Table {
     private final SortedMap<ByteBuffer, Value> map = new TreeMap<>();
-    private long sizeInBytes = 0L;
+    private long sizeInBytes;
 
     @NotNull
     @Override
@@ -43,7 +43,6 @@ public class MemTable implements Table {
             sizeInBytes -= oldValue.getData().remaining();
         }
     }
-
 
     @Override
     public int size() {

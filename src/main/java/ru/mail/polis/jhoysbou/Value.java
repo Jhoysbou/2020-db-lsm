@@ -5,12 +5,12 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 
-final class Value implements Comparable<Value>{
+final class Value implements Comparable<Value> {
     private final long timestamp;
     @NotNull
     private final Optional<ByteBuffer> data;
 
-    Value(final long timestamp, @NotNull ByteBuffer data) {
+    Value(final long timestamp, @NotNull final ByteBuffer data) {
         assert timestamp > 0L;
         this.timestamp = timestamp;
         this.data = Optional.of(data);
@@ -37,7 +37,7 @@ final class Value implements Comparable<Value>{
     }
 
     @Override
-    public int compareTo(@NotNull Value o) {
+    public int compareTo(@NotNull final Value o) {
         return -Long.compare(timestamp, o.timestamp);
     }
 }
