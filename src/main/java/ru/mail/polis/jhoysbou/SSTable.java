@@ -37,11 +37,8 @@ public class SSTable implements Table {
                 final ByteBuffer key = cell.getKey();
                 final int keySize = key.remaining();
 
-                final ByteBuffer key = cell.getKey();
-                final int keySize = key.remaining();
-
-                offset += keySize + 2 * Integer.BYTES + Long.BYTES;
                 offsets.add(offset);
+                offset += keySize + Integer.BYTES * 2 + Long.BYTES;
 
                 fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(keySize).flip());
                 fileChannel.write(key);
@@ -55,7 +52,7 @@ public class SSTable implements Table {
                     final ByteBuffer valueBuffer = value.getData();
                     final int valueSize = valueBuffer.remaining();
                     fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(valueSize).flip());
-                    fileChannel.write(buffer);
+                    fileChannel.write(valueBuffer);
                     offset += valueSize;
                 }
             }
@@ -63,7 +60,6 @@ public class SSTable implements Table {
             for (final Integer i : offsets) {
                 fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(i).flip());
             }
-
             fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(amount).flip());
         }
     }

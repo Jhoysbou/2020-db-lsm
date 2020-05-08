@@ -35,9 +35,6 @@ public class LsmDao implements DAO {
     private Table memTable;
     // State
     private int generation;
-  
-    private File storage;
-    final private long flushThreshold;
 
     /**
      * Simple LSM.
@@ -83,7 +80,7 @@ public class LsmDao implements DAO {
             try {
                 iters.add(t.iterator(from));
             } catch (IOException e) {
-                log.error("IOException in lsm iterator\n" + e);
+                log.error("IOException in lsm iterator\n");
                 e.printStackTrace();
             }
         });
