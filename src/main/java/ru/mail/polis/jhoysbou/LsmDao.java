@@ -15,11 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class LsmDao implements DAO {
@@ -63,9 +59,9 @@ public class LsmDao implements DAO {
                     this.generation = Math.max(this.generation, savedGeneration);
                     ssTables.put(savedGeneration, new SSTable(f.toFile()));
                 } catch (IOException e) {
-                    log.warn("IOException with .dat file:\n" + e.getMessage());
+                    log.error("IOException with .dat file:\n" + e.getMessage());
                 } catch (NumberFormatException e) {
-                    log.warn("Bad file name:" + name + "\n" + e.getMessage());
+                    log.error("Bad file name:" + name + "\n" + e.getMessage());
                 }
             });
         }
@@ -80,8 +76,7 @@ public class LsmDao implements DAO {
             try {
                 iters.add(t.iterator(from));
             } catch (IOException e) {
-                log.error("IOException in lsm iterator\n");
-                e.printStackTrace();
+                log.error("IOException in lsm iterator");
             }
         });
         // Sorted duplicates and tombstones
@@ -115,8 +110,7 @@ public class LsmDao implements DAO {
         file.createNewFile();
         SSTable.serialize(
                 file,
-                memTable.iterator(ByteBuffer.allocate(0)),
-                memTable.size()
+                memTable.iterator(ByteBuffer.allocate(0))
         );
         final File dst = new File(storage, generation + SUFFIX);
         Files.move(file.toPath(), dst.toPath(), StandardCopyOption.ATOMIC_MOVE);

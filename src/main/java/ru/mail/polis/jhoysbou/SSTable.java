@@ -26,8 +26,8 @@ public class SSTable implements Table {
         shift = fileSize - Integer.BYTES * (size + 1);
     }
 
-    static void serialize(final File file, final Iterator<Cell> elementsIter, final int amount) throws IOException {
-        try (FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE)) {
+    static void serialize(final File file, final Iterator<Cell> elementsIter) throws IOException {
+        try (FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)) {
 
             final List<Integer> offsets = new ArrayList<>();
             int offset = 0;
@@ -60,7 +60,7 @@ public class SSTable implements Table {
             for (final Integer i : offsets) {
                 fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(i).flip());
             }
-            fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(amount).flip());
+            fileChannel.write(ByteBuffer.allocate(Integer.BYTES).putInt(offsets.size()).flip());
         }
     }
 
