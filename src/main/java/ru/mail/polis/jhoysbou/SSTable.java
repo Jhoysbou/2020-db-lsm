@@ -27,7 +27,11 @@ public class SSTable implements Table {
     }
 
     static void serialize(final File file, final Iterator<Cell> elementsIter) throws IOException {
-        try (FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)) {
+        try (FileChannel fileChannel = FileChannel.open(
+                file.toPath(),
+                StandardOpenOption.WRITE,
+                StandardOpenOption.CREATE_NEW
+        )) {
 
             final List<Integer> offsets = new ArrayList<>();
             int offset = 0;
