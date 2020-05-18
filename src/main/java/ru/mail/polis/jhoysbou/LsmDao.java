@@ -15,7 +15,11 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 public class LsmDao implements DAO {
@@ -144,7 +148,7 @@ public class LsmDao implements DAO {
         });
 
         final Iterator<Cell> merged = Iterators.mergeSorted(iters, Cell.COMPARATOR);
-        final Iterator<Cell> unique =  Iters.collapseEquals(merged, Cell::getKey);
+        final Iterator<Cell> unique = Iters.collapseEquals(merged, Cell::getKey);
 
         final File temp = new File(storage, generation + TEMP);
         SSTable.serialize(temp, unique);
