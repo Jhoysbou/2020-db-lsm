@@ -15,11 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class LsmDao implements DAO {
@@ -27,7 +23,7 @@ public class LsmDao implements DAO {
 
     private static final String SUFFIX = ".dat";
     private static final String TEMP = ".tmp";
-    private final NavigableMap<Integer, Table> ssTables;
+    private NavigableMap<Integer, Table> ssTables;
     @NotNull
     private final File storage;
     private final long flushThreshold;
@@ -131,6 +127,38 @@ public class LsmDao implements DAO {
         for (final Table t : ssTables.values()) {
             t.close();
         }
+    }
+
+    @Override
+    public void compact() throws IOException {
+        final List<Iterator<Cell>> iters = new ArrayList<>(ssTables.size() + 1);
+        final ByteBuffer empty = ByteBuffer.allocate(0);
+        iters.add(memTable.iterator(empty));
+
+        ssTables.descendingMap().values().forEach(t -> {
+            try {
+                iters.add(t.iterator(empty));
+            } catch (IOException e) {
+                log.error("IOException in lsm iterator");
+            }
+        });
+
+        final Iterator<Cell> merged = Iterators.mergeSorted(iters, Cell.COMPARATOR);
+        final Iterator<Cell> unique =  Iters.collapseEquals(merged, Cell::getKey);
+
+        final File temp = new File(storage, generation + TEMP);
+        SSTable.serialize(temp, unique);
+
+        for (int i = 0; i < generation; i++) {
+            Files.delete(new File(storage, i + SUFFIX).toPath());
+        }
+        generation = 0;
+
+        final File dst = new File(storage, generation + SUFFIX);
+        Files.move(temp.toPath(), dst.toPath(), StandardCopyOption.ATOMIC_MOVE);
+        ssTables = new TreeMap<>();
+        ssTables.put(generation++, new SSTable(dst));
+        memTable = new MemTable();
     }
 }
 
